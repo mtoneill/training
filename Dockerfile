@@ -1,26 +1,22 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
-WORKDIR /app
-EXPOSE 5084
+# https://hub.docker.com/_/microsoft-dotnet
+FROM mcr.microsoft.com/dotnet/sdk:5.0.103 AS build
+WORKDIR /build
 
-ENV ASPNETCORE_URLS=http://+:5084
+RUN curl -sL https://deb.nodesource.com/setup_10.x |  bash -
+RUN apt-get update
+RUN apt-get install -y nodejs
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-dotnet-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
+# copy csproj and restore as distinct layers
+COPY ./*.csproj .
+RUN dotnet restore
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
-WORKDIR /src
-COPY ["0622Training.csproj", "./"]
-RUN dotnet restore "0622Training.csproj"
+# copy everything else and build app
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "0622Training.csproj" -c Release -o /app/build
+WORKDIR /build
+RUN dotnet publish -c release -o published --no-cache
 
-FROM build AS publish
-RUN dotnet publish "0622Training.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+# final stage/image
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "0622Training.dll"]
+COPY --from=build /build/published ./
+ENTRYPOINT ["dotnet", "react-dotnet-example.dll"]
