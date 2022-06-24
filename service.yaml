@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: sidapp01
+  name: moapp01
 spec:
   selector:
-    app: sidapp01
+    app: moapp01
   ports:
-  - port: 5178
-    targetPort: 5178
+  - port: 80
+    targetPort: 80
   type: LoadBalancer
