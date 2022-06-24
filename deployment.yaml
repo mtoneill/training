@@ -12,11 +12,11 @@ spec:
         app: moapp01
     spec:
       containers:
-      - name: sidapp01
+      - name: moapp01
         image: sbacr02.azurecr.io/moapp01:latest
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
-        - containerPort: 5178
+        - containerPort: 80
